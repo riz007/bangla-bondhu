@@ -38,9 +38,13 @@ Finished sentences are saved to the child's sentence book.
 
 ## Status
 
-Everything is `draft`: written from standard Bangladeshi usage, but not yet
-checked by a fluent speaker, and no audio is recorded. Draft lessons are hidden
-from children; parents can preview them in **Settings → Draft lessons**.
+The whole Bengali course is `reviewed`: checked by the project owner, a fluent
+Bangladeshi Bengali speaker, on 17 October 2026. Children see every lesson.
+No audio is recorded yet, so listening questions show a written clue. Once
+recordings are added, lessons can move to `published`.
+
+New content starts as `draft`, which stays hidden from children; parents can
+preview drafts in **Settings → Draft lessons**.
 
 ## Moving content out of draft
 

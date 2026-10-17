@@ -17,13 +17,13 @@ everyday words, and the grammar to build their own sentences.
 
 ## Content status
 
-The lessons are drafts. The words still need a check by a fluent Bangladeshi
-Bengali speaker, and the audio hasn't been recorded yet, so draft lessons are
-hidden from children by default. To try them, open
-**Settings → Draft lessons** and turn on **Show draft lessons**.
+The Bengali course was reviewed by the project owner, a fluent Bangladeshi
+Bengali speaker. Audio hasn't been recorded yet, so listening questions show a
+written clue instead. See [docs/CONTENT_REVIEW.md](docs/CONTENT_REVIEW.md) for
+how to add recordings and new lessons.
 
 An optional Islamic section only lists planned topics until a qualified
-reviewer has checked the material. See [docs/CONTENT_REVIEW.md](docs/CONTENT_REVIEW.md).
+reviewer has checked the material.
 
 ## Getting started
 

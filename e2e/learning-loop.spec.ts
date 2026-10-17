@@ -1,35 +1,26 @@
 import { expect, test } from "@playwright/test";
-import { answerCurrent, completeLesson, enableDraftPreview, lessonTitle } from "./helpers";
+import { answerCurrent, completeLesson, lessonTitle } from "./helpers";
 
 test.describe("first visit", () => {
-  test("needs no account and keeps unreviewed lessons out of the learner path", async ({ page }) => {
+  test("needs no account and opens straight onto the reviewed course", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("বাংলা বন্ধু");
-    await expect(page.getByText("บทเรียนกำลังรอการตรวจทาน")).toBeVisible();
     // No sign-up or personal-data fields anywhere on the home page.
     await expect(page.locator('input[type="email"], input[type="password"], input[type="tel"]')).toHaveCount(
       0,
     );
-    await expect(page.getByRole("link", { name: /บทต่อไป|เริ่มเรียนบทแรก/ })).toHaveCount(0);
-  });
-
-  test("a direct link to a draft lesson explains that it is awaiting review", async ({ page }) => {
-    await page.goto("/lesson/bn-hello-1");
-    await expect(page.getByRole("heading", { name: "บทนี้กำลังรอการตรวจทาน" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "เริ่มเรียนบทแรก" })).toBeVisible();
+    await expect(page.getByText("บทเรียนกำลังรอการตรวจทาน")).toHaveCount(0);
   });
 });
 
-test.describe("learning loop (parent preview of draft content)", () => {
-  test.beforeEach(async ({ page }) => {
-    await enableDraftPreview(page);
-  });
-
+test.describe("learning loop", () => {
   test("start → complete → summary → refresh keeps progress → review brings the miss back", async ({
     page,
   }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "เริ่มเรียนบทแรก" }).click();
-    await expect(page.getByText("ฉบับร่าง รอผู้ตรวจภาษา")).toBeVisible();
+    await expect(page.getByText("ฉบับร่าง รอผู้ตรวจภาษา")).toHaveCount(0);
 
     await completeLesson(page, { wrongOnce: "bn-hello-1-6" });
     await expect(page.getByText("ฝึกครบแล้ว!")).toBeVisible();

@@ -39,9 +39,10 @@ describe("shipped curriculum", () => {
     expect(assetManifest.filter((a) => !assetExists(a.path)).map((a) => a.path)).toEqual([]);
   });
 
-  it("keeps draft lessons out of the learner path unless preview is on", () => {
+  it("shows every reviewed Bengali lesson to children without preview", () => {
     const learner = getTrackPath("bn", { includeDrafts: false }).flatMap((p) => p.lessons);
     expect(learner.every((l) => l.contentStatus !== "draft")).toBe(true);
+    expect(learner).toHaveLength(curriculum.lessons.filter((l) => l.trackId === "bn").length);
     const preview = getTrackPath("bn", { includeDrafts: true }).flatMap((p) => p.lessons);
     expect(preview.length).toBeGreaterThanOrEqual(7);
   });
@@ -109,6 +110,7 @@ describe("validateCurriculum catches broken content", () => {
   it("rejects a published lesson that uses draft items or lacks audio", () => {
     const c = clone();
     const l = lesson(c, "bn-hello-1");
+    c.items.find((i) => i.id === "bn.word.aam")!.contentStatus = "draft";
     l.contentStatus = "published";
     l.reviewedAt = "2026-10-01";
     l.reviewerNote = "Checked by a native speaker";

@@ -1,9 +1,9 @@
 import type { CurriculumItem } from "@/features/curriculum/schema";
 import { bnItem } from "./build";
 
-// Every item is draft until a Bangladeshi Bengali speaker has reviewed it and
-// audio is recorded (docs/CONTENT_REVIEW.md). Letter readings use dots for the
-// curled-tongue sounds (ṭ, ḍ, ṇ, ṣ, ṛ); word readings stay plain.
+// Reviewed by the project owner; audio not yet recorded (docs/CONTENT_REVIEW.md).
+// Letter readings use dots for the curled-tongue sounds (ṭ, ḍ, ṇ, ṣ, ṛ); word
+// readings stay plain.
 
 const vowel = (id: string, text: string, tr: string, th: string, en: string, note?: [string, string]) =>
   bnItem("letter", `bn.vowel.${id}`, text, tr, [th, en], { note });

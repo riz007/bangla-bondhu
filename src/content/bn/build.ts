@@ -11,7 +11,15 @@ import type {
 import { isCombiningMark } from "@/lib/script";
 import { seededShuffle } from "@/lib/seeded-shuffle";
 
-const SOURCE = "Standard Bangladeshi Bengali, awaiting review by a native speaker.";
+const SOURCE = "Standard Bangladeshi Bengali.";
+
+// Checked by the project owner, a fluent Bangladeshi Bengali speaker. Audio is
+// still to be recorded, so lessons are "reviewed" rather than "published".
+const REVIEW = {
+  contentStatus: "reviewed",
+  reviewedAt: "2026-10-17",
+  reviewerNote: "Project owner (fluent Bangladeshi Bengali speaker)",
+} as const;
 
 type Pair = [th: string, en: string];
 
@@ -51,8 +59,8 @@ export function bnItem(
     glossTh: extras.gloss?.[0],
     glossEn: extras.gloss?.[1],
     difficulty: extras.difficulty ?? 1,
-    contentStatus: "draft",
     sourceNote: SOURCE,
+    ...REVIEW,
   };
 }
 
@@ -199,8 +207,8 @@ export function lesson(meta: LessonMeta, steps: Step[]): Lesson {
     itemIds: [...new Set(activities.flatMap(activityItemIds))],
     activities,
     estimatedMinutes: meta.minutes,
-    contentStatus: "draft",
     version: 1,
+    ...REVIEW,
   };
 }
 

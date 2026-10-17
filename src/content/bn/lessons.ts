@@ -18,8 +18,6 @@ import {
   world,
 } from "./build";
 
-// Drafts stay hidden from children until reviewed (docs/CONTENT_REVIEW.md).
-
 const V = (id: string) => `bn.vowel.${id}`;
 const C = (id: string) => `bn.cons.${id}`;
 const K = (id: string) => `bn.kar.${id}`;
