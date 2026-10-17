@@ -17,8 +17,29 @@ const exportFileSchema = z.object({
 
 type Migration = (raw: Record<string, unknown>) => Record<string, unknown>;
 
-// Keyed by the version being upgraded from, e.g. 1: (raw) => ({ ...raw, schemaVersion: 2 }).
-const MIGRATIONS: Record<number, Migration> = {};
+function withoutArabic(record: unknown): Record<string, unknown> {
+  if (typeof record !== "object" || record === null) return {};
+  return Object.fromEntries(
+    Object.entries(record).filter(
+      ([, value]) =>
+        !(typeof value === "object" && value !== null && "trackId" in value && value.trackId === "ar"),
+    ),
+  );
+}
+
+// Keyed by the version being upgraded from.
+const MIGRATIONS: Record<number, Migration> = {
+  // v2 adds the sentence book, drops the retired Arabic track, and clears
+  // half-finished lessons because the course was reorganised.
+  1: (raw) => ({
+    ...raw,
+    schemaVersion: 2,
+    items: withoutArabic(raw.items),
+    lessons: withoutArabic(raw.lessons),
+    sessions: {},
+    sentences: [],
+  }),
+};
 
 export type MigrationResult =
   { ok: true; state: ProgressState } | { ok: false; reason: "invalid" | "too-new" };

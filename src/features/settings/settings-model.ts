@@ -13,7 +13,6 @@ export interface Settings {
   soundMuted: boolean;
   volume: number;
   motion: MotionPreference;
-  showArabicTrack: boolean;
   showIslamicTrack: boolean;
   contentPreview: boolean;
 }
@@ -25,7 +24,6 @@ export const DEFAULT_SETTINGS: Settings = {
   soundMuted: false,
   volume: 0.8,
   motion: "system",
-  showArabicTrack: true,
   showIslamicTrack: true,
   contentPreview: false,
 };
@@ -65,7 +63,6 @@ export function parseSettings(raw: string | null): Settings {
     soundMuted: bool(value.soundMuted, DEFAULT_SETTINGS.soundMuted),
     volume,
     motion: oneOf(value.motion, ["system", "reduce", "full"], DEFAULT_SETTINGS.motion),
-    showArabicTrack: bool(value.showArabicTrack, DEFAULT_SETTINGS.showArabicTrack),
     showIslamicTrack: bool(value.showIslamicTrack, DEFAULT_SETTINGS.showIslamicTrack),
     contentPreview: bool(value.contentPreview, DEFAULT_SETTINGS.contentPreview),
   };

@@ -7,7 +7,7 @@ import { createIndexedDbRepository } from "@/features/progress/repository";
 import { resetSettings, updateSettings } from "@/features/settings/settings-store";
 import { LessonRunner, type SessionDefinition } from "./lesson-runner";
 
-const lesson = findLesson("bn-w0-l1")!;
+const lesson = findLesson("bn-hello-1")!;
 const definition: SessionDefinition = {
   kind: "lesson",
   sessionId: lesson.id,

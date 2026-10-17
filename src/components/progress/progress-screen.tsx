@@ -1,14 +1,16 @@
 "use client";
 
-import { HardDrive } from "lucide-react";
+import { BookHeart, Check, HardDrive } from "lucide-react";
 import Link from "next/link";
 import { ItemChips, itemsById } from "@/components/script/item-chips";
-import { findLesson } from "@/features/curriculum/loader";
-import { lessonTitle } from "@/features/curriculum/localize";
+import { TargetText } from "@/components/script/target-text";
+import { curriculum, findLesson, getTrackPath } from "@/features/curriculum/loader";
+import { lessonTitle, worldTitle } from "@/features/curriculum/localize";
+import { isChapterComplete } from "@/features/lessons/path-status";
 import type { ItemProgress, MasteryLevel } from "@/features/progress/model";
 import { useProgress } from "@/features/progress/progress-store";
 import { useReviewStatus } from "@/features/review/use-review";
-import { useHydrated, useLocale, useT } from "@/features/settings/settings-store";
+import { useHydrated, useLocale, useSettings, useT } from "@/features/settings/settings-store";
 import type { Messages } from "@/lib/i18n/messages";
 import { StorageWarning } from "./storage-warning";
 
@@ -25,6 +27,7 @@ export function ProgressScreen() {
   const progress = useProgress();
   const review = useReviewStatus();
   const locale = useLocale();
+  const settings = useSettings();
   const t = useT();
 
   if (!hydrated || progress.status !== "ready") {
@@ -40,6 +43,11 @@ export function ProgressScreen() {
     (a, b) => Date.parse(b.lastCompletedAt) - Date.parse(a.lastCompletedAt),
   );
   const itemEntries = Object.values(progress.state.items);
+  const letterIds = curriculum.items
+    .filter((item) => item.id.startsWith("bn.vowel.") || item.id.startsWith("bn.cons."))
+    .map((item) => item.id);
+  const lettersMet = letterIds.filter((id) => progress.state.items[id]).length;
+  const chapters = getTrackPath("bn", { includeDrafts: settings.contentPreview });
 
   return (
     <div className="flex flex-col gap-10">
@@ -52,7 +60,7 @@ export function ProgressScreen() {
         <StorageWarning snapshot={progress} />
       </header>
 
-      {lessonRecords.length === 0 && itemEntries.length === 0 ? (
+      {lessonRecords.length === 0 && itemEntries.length === 0 && progress.state.sentences.length === 0 ? (
         <section className="paper-card taped flex flex-col items-start gap-4 px-6 pb-6 pt-8">
           <h2 className="font-display text-2xl">{t.journal.emptyTitle}</h2>
           <p className="text-ink-soft">{t.journal.emptyBody}</p>
@@ -85,6 +93,74 @@ export function ProgressScreen() {
             ) : null}
           </section>
 
+          <section aria-labelledby="stamps-heading" className="flex flex-col gap-3">
+            <div>
+              <h2 id="stamps-heading" className="font-display text-2xl">
+                {t.journal.stamps}
+              </h2>
+              <p className="text-sm text-ink-soft">{t.journal.stampsNote}</p>
+            </div>
+            <ul className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-9">
+              {chapters.map(({ world, lessons }) => {
+                const earned = isChapterComplete(lessons, progress.state);
+                return (
+                  <li key={world.id} className="flex flex-col items-center gap-1 text-center">
+                    <span
+                      className={`relative flex size-16 items-center justify-center rounded-full border-[3px] ${
+                        earned
+                          ? "-rotate-6 border-teal bg-teal-soft text-teal"
+                          : "border-dashed border-ink/25 text-ink-soft opacity-60"
+                      }`}
+                    >
+                      <TargetText language="bn-BD" className="text-xl">
+                        {lessons[0]?.emblem}
+                      </TargetText>
+                      {earned ? (
+                        <Check
+                          aria-hidden="true"
+                          className="absolute -bottom-1 -right-1 size-6 rounded-full border-2 border-ink bg-card p-0.5 text-teal"
+                          strokeWidth={3}
+                        />
+                      ) : null}
+                    </span>
+                    <span className="text-xs leading-tight">{worldTitle(world, locale)}</span>
+                    <span className="sr-only">{earned ? t.journal.stampEarned : t.journal.stampWaiting}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="font-medium text-teal">{t.journal.lettersMet(lettersMet, letterIds.length)}</p>
+          </section>
+
+          <section
+            aria-labelledby="sentence-book"
+            className="paper-card taped flex flex-col gap-3 px-5 pb-5 pt-8"
+          >
+            <h2 id="sentence-book" className="flex items-center gap-2 font-display text-2xl">
+              <BookHeart aria-hidden="true" className="size-6 text-coral-ink" />
+              {t.journal.sentenceBook} ({progress.state.sentences.length})
+            </h2>
+            {progress.state.sentences.length === 0 ? (
+              <p className="text-ink-soft">{t.journal.sentenceBookEmpty}</p>
+            ) : (
+              <ol className="flex flex-col gap-2">
+                {progress.state.sentences.map((sentence) => (
+                  <li
+                    key={sentence.id}
+                    className="flex flex-col border-b border-dashed border-rule pb-2 last:border-0"
+                  >
+                    <TargetText language="bn-BD" className="text-2xl">
+                      {sentence.text}
+                    </TargetText>
+                    <span className="text-sm text-ink-soft">
+                      {locale === "en" ? sentence.meaningEn : sentence.meaningTh}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+
           <section aria-labelledby="lessons-done" className="flex flex-col gap-4">
             <h2 id="lessons-done" className="font-display text-2xl">
               {t.journal.lessonsDone(lessonRecords.length)}
@@ -96,17 +172,13 @@ export function ProgressScreen() {
                 {lessonRecords.map((record) => {
                   const lesson = findLesson(record.lessonId);
                   if (!lesson) return null;
-                  const arabic = lesson.trackId === "ar";
                   return (
                     <li key={record.lessonId} className="paper-card flex items-center gap-4 p-4">
                       <span
                         aria-hidden="true"
                         className="flex size-14 shrink-0 -rotate-6 items-center justify-center rounded-md border-[3px] border-teal text-teal"
                       >
-                        <span
-                          lang={arabic ? "ar" : "bn-BD"}
-                          className={arabic ? "font-arabic text-2xl" : "font-bengali text-xl"}
-                        >
+                        <span lang="bn-BD" className="font-bengali text-xl">
                           {lesson.emblem}
                         </span>
                       </span>

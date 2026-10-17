@@ -1,5 +1,11 @@
 import type { TrackId } from "@/features/curriculum/schema";
-import type { ActivityResult, ProgressState, SavedSession } from "./model";
+import {
+  SENTENCE_BOOK_LIMIT,
+  type ActivityResult,
+  type ProgressState,
+  type SavedSentence,
+  type SavedSession,
+} from "./model";
 import { applyOutcome } from "./scheduler";
 
 // An item only counts as correct if every first attempt that used it was right.
@@ -73,4 +79,10 @@ export function isLessonComplete(state: ProgressState, lessonId: string): boolea
 
 export function arePrerequisitesMet(state: ProgressState, prerequisites: readonly string[]): boolean {
   return prerequisites.every((id) => isLessonComplete(state, id));
+}
+
+// Newest first. Making the same sentence again moves it back to the top.
+export function addSentence(state: ProgressState, sentence: SavedSentence): ProgressState {
+  const others = state.sentences.filter((saved) => saved.text !== sentence.text);
+  return { ...state, sentences: [sentence, ...others].slice(0, SENTENCE_BOOK_LIMIT) };
 }

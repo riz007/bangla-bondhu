@@ -1,25 +1,29 @@
 # Bangla Bondhu (বাংলা বন্ধু)
 
 Short, friendly lessons that help Thai-speaking children (about 8–9 years old)
-learn to read and recognise Bangladeshi Bengali. There's also an optional,
-separate section for Arabic letters and introductory Islamic learning.
+learn Bangladeshi Bengali: the full alphabet, vowel signs and joined letters,
+everyday words, and the grammar to build their own sentences.
 
 - No sign-up. Progress is saved in the browser on this device.
 - Interface in Thai or English (switch with the button in the header).
 - Bengali is shown in Bangla script, with an optional Latin reading aid that
   fades as words are learned.
-- Spaced review brings missed and older words back at the right time.
+- 9 chapters and 31 lessons, from the first words to a short story.
+- A sentence maker where children build their own sentences (it checks that the
+  verb matches the subject) and keep them in a sentence book.
+- Chapter stamps, a letters-met counter, and spaced review that brings missed
+  and older words back at the right time.
 - Works on phones, tablets and desktops, and can be installed as an app.
 
 ## Content status
 
-The lessons are drafts. The Bengali and Arabic words still need a check by a
-fluent speaker or teacher, and the audio hasn't been recorded yet, so draft
-lessons are hidden from children by default. To try them, open
+The lessons are drafts. The words still need a check by a fluent Bangladeshi
+Bengali speaker, and the audio hasn't been recorded yet, so draft lessons are
+hidden from children by default. To try them, open
 **Settings → Draft lessons** and turn on **Show draft lessons**.
 
-The Islamic section only lists planned topics until a qualified reviewer has
-checked the material. See [docs/CONTENT_REVIEW.md](docs/CONTENT_REVIEW.md).
+An optional Islamic section only lists planned topics until a qualified
+reviewer has checked the material. See [docs/CONTENT_REVIEW.md](docs/CONTENT_REVIEW.md).
 
 ## Getting started
 

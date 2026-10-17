@@ -14,7 +14,6 @@ export interface ValidationOptions {
 
 const LANGUAGE_FOR_TRACK: Record<TrackId, readonly CurriculumItem["targetLanguage"][]> = {
   bn: ["bn-BD"],
-  ar: ["ar"],
   islam: ["ar", "th"],
 };
 
@@ -153,19 +152,33 @@ function validateLessonReview(lesson: Lesson, items: Map<string, CurriculumItem>
   }
   if (lesson.contentStatus === "draft") return problems;
 
-  if (!lesson.reviewedAt) problems.push(`${where}: reviewed lessons need reviewedAt`);
-  const usedIds = new Set([...lesson.itemIds, ...lesson.activities.flatMap(exampleIds)]);
+  if (!lesson.reviewedAt || !lesson.reviewerNote) {
+    problems.push(`${where}: reviewed lessons need reviewedAt and reviewerNote`);
+  }
+  const usedIds = new Set([...lesson.itemIds, ...lesson.activities.flatMap(referencedIds)]);
   for (const id of usedIds) {
     const item = items.get(id);
     if (!item) continue;
     if (item.contentStatus === "draft") problems.push(`${where}: uses draft item ${id}`);
-    if (!item.audioSrc) problems.push(`${where}: item ${id} needs reviewed audio before publishing`);
+    // Reviewed lessons may go to children with the written-clue fallback; publishing needs recordings.
+    if (lesson.contentStatus === "published" && !item.audioSrc) {
+      problems.push(`${where}: item ${id} needs reviewed audio before publishing`);
+    }
   }
   return problems;
 }
 
-function exampleIds(activity: Activity): string[] {
-  return activity.type === "introduce" && activity.exampleItemId ? [activity.exampleItemId] : [];
+function referencedIds(activity: Activity): string[] {
+  switch (activity.type) {
+    case "introduce":
+      return activity.exampleItemId ? [activity.exampleItemId] : [];
+    case "tip":
+      return activity.exampleItemIds;
+    case "make-sentence":
+      return activity.slots.flatMap((slot) => slot.options);
+    default:
+      return [];
+  }
 }
 
 function validateActivity(activity: Activity, items: Map<string, CurriculumItem>): string[] {
@@ -187,6 +200,46 @@ function validateActivity(activity: Activity, items: Map<string, CurriculumItem>
         const target = items.get(activity.itemId);
         if (example && target && !example.targetText.includes(target.targetText)) {
           problems.push(`example ${example.id} does not contain ${target.targetText}`);
+        }
+      }
+      break;
+    }
+    case "tip": {
+      activity.exampleItemIds.forEach(get);
+      break;
+    }
+    case "make-sentence": {
+      const slotCount = activity.slots.length;
+      activity.slots.forEach((slot, index) => {
+        if (findDuplicates(slot.options).length) problems.push(`slot ${index} repeats an option`);
+        for (const option of slot.options.map(get)) {
+          if (option && (!option.glossTh || !option.glossEn)) {
+            problems.push(`${option.id} needs glossTh and glossEn to be used in a sentence`);
+          }
+        }
+      });
+      for (const template of [activity.templateTh, activity.templateEn]) {
+        const used = [...template.matchAll(/\{(\d+)\}/g)].map((m) => Number(m[1]));
+        if (used.some((n) => n >= slotCount)) problems.push(`template "${template}" names a missing slot`);
+        // A slot with a single fixed word (like না or আছে) may be left out of the translation.
+        activity.slots.forEach((slot, n) => {
+          if (slot.options.length > 1 && !used.includes(n)) {
+            problems.push(`template "${template}" leaves out slot ${n}`);
+          }
+        });
+      }
+      for (const rule of activity.agreement) {
+        const target = activity.slots[rule.slot];
+        const source = activity.slots[rule.dependsOn];
+        if (!target || !source || rule.slot === rule.dependsOn) {
+          problems.push("agreement rule points at a missing slot");
+          continue;
+        }
+        for (const option of source.options) {
+          const required = rule.pairs[option];
+          if (!required) problems.push(`agreement has no form for ${option}`);
+          else if (!target.options.includes(required))
+            problems.push(`agreement form ${required} is not an option`);
         }
       }
       break;

@@ -143,11 +143,6 @@ export function SettingsScreen() {
 
           <Group title={t.settings.tracksTitle} description={t.settings.tracksNote}>
             <Checkbox
-              label={t.settings.showArabic}
-              checked={settings.showArabicTrack}
-              onChange={(showArabicTrack) => updateSettings({ showArabicTrack })}
-            />
-            <Checkbox
               label={t.settings.showIslam}
               checked={settings.showIslamicTrack}
               onChange={(showIslamicTrack) => updateSettings({ showIslamicTrack })}

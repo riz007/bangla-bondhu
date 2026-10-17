@@ -33,8 +33,21 @@ export async function answerCurrent(page: Page, { wrong = false } = {}) {
 
   switch (activity.type) {
     case "introduce":
+    case "tip":
       await page.getByRole("button", { name: "รู้จักแล้ว ไปต่อ" }).click();
       return;
+    case "make-sentence": {
+      const choices = activity.slots.map((slot) => slot.options[0]);
+      for (const rule of activity.agreement) choices[rule.slot] = rule.pairs[choices[rule.dependsOn]];
+      for (const [slot, itemId] of choices.entries()) {
+        if (activity.slots[slot].options.length > 1) {
+          await page.locator(`button[data-slot="${slot}"][data-item-id="${itemId}"]`).click();
+        }
+      }
+      await page.getByRole("button", { name: "ตรวจประโยค" }).click();
+      await page.getByRole("button", { name: "เก็บในสมุดประโยค แล้วไปต่อ" }).click();
+      return;
+    }
     case "listen-and-select":
     case "image-to-word":
     case "word-to-image":
@@ -90,4 +103,42 @@ export function lessonTitle(id: string): string {
   const lesson = findLesson(id);
   if (!lesson) throw new Error(`Unknown lesson ${id}`);
   return lesson.titleTh;
+}
+
+// Marks lessons as finished in IndexedDB so a test can open a later chapter directly.
+export async function seedCompletedLessons(page: Page, lessonIds: string[]) {
+  await page.goto("/");
+  await page.evaluate(async (ids) => {
+    const now = new Date().toISOString();
+    const lessons = Object.fromEntries(
+      ids.map((id) => [
+        id,
+        {
+          lessonId: id,
+          trackId: "bn",
+          lessonVersion: 1,
+          completedCount: 1,
+          firstCompletedAt: now,
+          lastCompletedAt: now,
+          bestAccuracy: 1,
+          lastAccuracy: 1,
+        },
+      ]),
+    );
+    const state = { schemaVersion: 2, items: {}, lessons, sessions: {}, sentences: [] };
+    await new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open("bangla-bondhu", 1);
+      open.onupgradeneeded = () => open.result.createObjectStore("progress");
+      open.onsuccess = () => {
+        const tx = open.result.transaction("progress", "readwrite");
+        tx.objectStore("progress").put(state, "state");
+        tx.oncomplete = () => {
+          open.result.close();
+          resolve();
+        };
+        tx.onerror = () => reject(tx.error);
+      };
+      open.onerror = () => reject(open.error);
+    });
+  }, lessonIds);
 }

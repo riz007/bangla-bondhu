@@ -7,7 +7,7 @@ import type { WorldPath } from "@/features/curriculum/loader";
 import { lessonTitle, worldDescription, worldTitle } from "@/features/curriculum/localize";
 import type { Lesson, TargetLanguage } from "@/features/curriculum/schema";
 import type { ProgressState } from "@/features/progress/model";
-import { lessonStatus, type LessonStatus } from "@/features/lessons/path-status";
+import { isChapterComplete, lessonStatus, type LessonStatus } from "@/features/lessons/path-status";
 import { useLocale, useT } from "@/features/settings/settings-store";
 
 interface LearningPathProps {
@@ -27,9 +27,15 @@ export function LearningPath({ paths, progress, language, currentLessonId }: Lea
           <div className="mb-4 flex items-baseline gap-3">
             <span
               aria-hidden="true"
-              className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-mango font-display text-lg font-semibold"
+              className={`flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-ink font-display text-lg font-semibold ${
+                isChapterComplete(lessons, progress) ? "bg-teal text-white" : "bg-mango"
+              }`}
             >
-              {worldIndex + 1}
+              {isChapterComplete(lessons, progress) ? (
+                <Check className="size-5" strokeWidth={3} />
+              ) : (
+                worldIndex + 1
+              )}
             </span>
             <div>
               <h3 id={`${world.id}-title`} className="font-display text-xl font-medium">
@@ -37,6 +43,11 @@ export function LearningPath({ paths, progress, language, currentLessonId }: Lea
                 {worldTitle(world, locale)}
               </h3>
               <p className="text-sm text-ink-soft">{worldDescription(world, locale)}</p>
+              {isChapterComplete(lessons, progress) ? (
+                <p className="mt-1 inline-block -rotate-2 rounded-sm border-2 border-teal px-2 text-sm font-semibold text-teal">
+                  {t.path.chapterDone}
+                </p>
+              ) : null}
             </div>
           </div>
           <ol className="relative ml-4 flex flex-col gap-4 border-l-[3px] border-dashed border-teal/40 pl-6 sm:ml-[18px]">

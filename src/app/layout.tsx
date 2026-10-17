@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Anuphan, Mitr, Noto_Naskh_Arabic, Noto_Sans_Bengali } from "next/font/google";
+import { Anuphan, Mitr, Noto_Sans_Bengali } from "next/font/google";
 import { AppEffects, SkipLink } from "@/components/app-shell/app-effects";
 import "./globals.css";
 
@@ -20,13 +20,6 @@ const notoBengali = Noto_Sans_Bengali({
   variable: "--font-noto-bengali",
   subsets: ["bengali"],
   display: "swap",
-});
-
-const notoNaskh = Noto_Naskh_Arabic({
-  variable: "--font-noto-naskh",
-  subsets: ["arabic"],
-  display: "swap",
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -51,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="th"
-      className={`${anuphan.variable} ${mitr.variable} ${notoBengali.variable} ${notoNaskh.variable} antialiased`}
+      className={`${anuphan.variable} ${mitr.variable} ${notoBengali.variable} antialiased`}
       data-motion="system"
     >
       <body className="min-h-dvh">

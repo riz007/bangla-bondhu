@@ -1,16 +1,15 @@
-import { arItems, arLessons, arWorlds } from "@/content/ar";
 import { bnItems } from "@/content/bn/items";
 import { bnLessons, bnWorlds } from "@/content/bn/lessons";
 import { islamLessons, islamPlannedTopics } from "@/content/islam";
 import type { Activity, Curriculum, CurriculumItem, Lesson, TrackId, World } from "./schema";
 
-export const CURRICULUM_VERSION = 1;
+export const CURRICULUM_VERSION = 2;
 
 export const curriculum: Curriculum = {
   version: CURRICULUM_VERSION,
-  items: [...bnItems, ...arItems],
-  lessons: [...bnLessons, ...arLessons, ...islamLessons],
-  worlds: [...bnWorlds, ...arWorlds],
+  items: bnItems,
+  lessons: [...bnLessons, ...islamLessons],
+  worlds: bnWorlds,
   plannedTopics: islamPlannedTopics,
 };
 

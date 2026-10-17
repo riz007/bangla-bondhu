@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Client code imports only types from this file, so Zod stays out of the browser bundle.
 
-export const trackIdSchema = z.enum(["bn", "ar", "islam"]);
+export const trackIdSchema = z.enum(["bn", "islam"]);
 export type TrackId = z.infer<typeof trackIdSchema>;
 
 export const contentStatusSchema = z.enum(["draft", "reviewed", "published"]);
@@ -11,7 +11,16 @@ export type ContentStatus = z.infer<typeof contentStatusSchema>;
 export const targetLanguageSchema = z.enum(["bn-BD", "ar", "th"]);
 export type TargetLanguage = z.infer<typeof targetLanguageSchema>;
 
-export const itemKindSchema = z.enum(["letter", "vowel-sign", "syllable", "word", "phrase"]);
+export const itemKindSchema = z.enum([
+  "letter",
+  "vowel-sign",
+  "sign",
+  "conjunct",
+  "numeral",
+  "syllable",
+  "word",
+  "phrase",
+]);
 export type ItemKind = z.infer<typeof itemKindSchema>;
 
 const idSchema = z
@@ -46,6 +55,9 @@ export const curriculumItemSchema = z.object({
   imageSrc: publicAssetPath("images").optional(),
   altTh: z.string().min(1).optional(),
   altEn: z.string().min(1).optional(),
+  // Short glosses used when the sentence maker builds a translation, e.g. খায় → "eats".
+  glossTh: z.string().min(1).optional(),
+  glossEn: z.string().min(1).optional(),
   difficulty: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]),
   contentStatus: contentStatusSchema,
   sourceNote: z.string().min(1).optional(),
@@ -152,6 +164,38 @@ export const missingCharacterSchema = z.object({
   answerOptionId: idSchema,
 });
 
+export const tipSchema = z.object({
+  ...activityBase,
+  type: z.literal("tip"),
+  titleTh: z.string().min(1),
+  titleEn: z.string().min(1),
+  bodyTh: z.string().min(1),
+  bodyEn: z.string().min(1),
+  exampleItemIds: z.array(idSchema).max(4),
+});
+
+// A sentence frame the learner fills in freely. `agreement` ties one slot to another,
+// e.g. the verb form must match the subject the learner picked.
+export const makeSentenceSchema = z.object({
+  ...activityBase,
+  type: z.literal("make-sentence"),
+  slots: z
+    .array(z.object({ options: z.array(idSchema).min(1).max(6) }))
+    .min(2)
+    .max(5),
+  agreement: z
+    .array(
+      z.object({
+        slot: z.number().int().nonnegative(),
+        dependsOn: z.number().int().nonnegative(),
+        pairs: z.record(idSchema, idSchema),
+      }),
+    )
+    .default([]),
+  templateTh: z.string().min(1),
+  templateEn: z.string().min(1),
+});
+
 export const activitySchema = z.discriminatedUnion("type", [
   introduceActivitySchema,
   listenAndSelectSchema,
@@ -164,6 +208,8 @@ export const activitySchema = z.discriminatedUnion("type", [
   buildWordSchema,
   listenAndOrderSchema,
   missingCharacterSchema,
+  tipSchema,
+  makeSentenceSchema,
 ]);
 export type Activity = z.infer<typeof activitySchema>;
 export type ActivityType = Activity["type"];
@@ -185,7 +231,7 @@ export const lessonSchema = z.object({
   emblem: z.string().min(1),
   prerequisites: z.array(idSchema),
   itemIds: z.array(idSchema).min(1),
-  activities: z.array(activitySchema).min(5).max(14),
+  activities: z.array(activitySchema).min(5).max(16),
   estimatedMinutes: z.number().int().min(1).max(10),
   contentStatus: contentStatusSchema,
   version: z.number().int().positive(),

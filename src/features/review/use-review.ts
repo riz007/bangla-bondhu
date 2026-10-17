@@ -13,7 +13,6 @@ import { reviewableItemIds } from "./review-session";
 
 export function visibleTracks(settings: Settings): TrackId[] {
   const tracks: TrackId[] = ["bn"];
-  if (settings.showArabicTrack) tracks.push("ar");
   if (settings.showIslamicTrack) tracks.push("islam");
   return tracks;
 }

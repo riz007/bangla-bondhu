@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assetManifest } from "@/content/assets";
 import { curriculum, getTrackPath } from "./loader";
-import type { Curriculum, Lesson } from "./schema";
+import type { ActivityOf, ActivityType, Curriculum, Lesson } from "./schema";
 import { validateCurriculum } from "./validation";
 
 const publicDir = join(process.cwd(), "public");
@@ -17,6 +17,12 @@ function lesson(c: Curriculum, id: string): Lesson {
   const found = c.lessons.find((l) => l.id === id);
   if (!found) throw new Error(`fixture lesson ${id} missing`);
   return found;
+}
+
+function activityOf<T extends ActivityType>(c: Curriculum, lessonId: string, type: T): ActivityOf<T> {
+  const found = lesson(c, lessonId).activities.find((a) => a.type === type);
+  if (!found) throw new Error(`fixture: no ${type} in ${lessonId}`);
+  return found as ActivityOf<T>;
 }
 
 describe("shipped curriculum", () => {
@@ -48,10 +54,26 @@ describe("shipped curriculum", () => {
     }
   });
 
-  it("marks every Arabic item with Arabic language metadata", () => {
-    const arabic = curriculum.items.filter((i) => i.trackId === "ar");
-    expect(arabic.length).toBeGreaterThan(0);
-    expect(arabic.every((i) => i.targetLanguage === "ar")).toBe(true);
+  it("teaches the whole alphabet: 11 vowels, every consonant and every vowel sign", () => {
+    const introduced = new Set(
+      curriculum.lessons.flatMap((l) =>
+        l.activities.flatMap((a) => (a.type === "introduce" ? [a.itemId] : [])),
+      ),
+    );
+    const vowels = curriculum.items.filter((i) => i.id.startsWith("bn.vowel."));
+    const consonants = curriculum.items.filter((i) => i.id.startsWith("bn.cons."));
+    const kars = curriculum.items.filter((i) => i.id.startsWith("bn.kar."));
+    expect(vowels.map((i) => i.targetText).join("")).toBe("অআইঈউঊঋএঐওঔ");
+    expect(consonants).toHaveLength(39);
+    expect(kars).toHaveLength(10);
+    for (const item of [...vowels, ...consonants, ...kars]) {
+      expect(introduced, `${item.id} is never introduced`).toContain(item.id);
+    }
+  });
+
+  it("includes sentence-maker frames for children to build their own sentences", () => {
+    const frames = curriculum.lessons.flatMap((l) => l.activities.filter((a) => a.type === "make-sentence"));
+    expect(frames.length).toBeGreaterThanOrEqual(5);
   });
 });
 
@@ -64,36 +86,61 @@ describe("validateCurriculum catches broken content", () => {
 
   it("rejects an answer that is not among the options", () => {
     const c = clone();
-    const activity = lesson(c, "bn-w0-l1").activities.find((a) => a.id === "bn-w0-l1-a4");
-    if (activity?.type !== "word-to-image") throw new Error("fixture changed");
+    const activity = activityOf(c, "bn-hello-1", "word-to-image");
     activity.optionItemIds = ["bn.word.boi", "bn.word.mach"];
     expect(validateCurriculum(c).join("\n")).toMatch(/answer is not one of the options/);
   });
 
   it("rejects a build-word answer that does not spell the target", () => {
     const c = clone();
-    const activity = lesson(c, "bn-w1-l1").activities.find((a) => a.id === "bn-w1-l1-a8");
-    if (activity?.type !== "build-word") throw new Error("fixture changed");
-    activity.answerTileIds = ["t-i", "t-bo"];
+    const activity = activityOf(c, "bn-consonants-5", "build-word");
+    const id = (text: string) => activity.tiles.find((t) => t.text === text)!.id;
+    activity.answerTileIds = [id("ই"), id("ব")];
     expect(validateCurriculum(c).join("\n")).toMatch(/answer builds "ইব", expected "বই"/);
   });
 
   it("rejects a missing-character activity that does not spell the word", () => {
     const c = clone();
-    const activity = lesson(c, "bn-w1-l1").activities.find((a) => a.id === "bn-w1-l1-a7");
-    if (activity?.type !== "missing-character") throw new Error("fixture changed");
-    activity.answerOptionId = "opt-bo";
-    expect(validateCurriculum(c).join("\n")).toMatch(/does not spell আম/);
+    const activity = activityOf(c, "bn-consonants-1", "missing-character");
+    activity.answerOptionId = activity.options.find((o) => o.text === "খ")!.id;
+    expect(validateCurriculum(c).join("\n")).toMatch(/does not spell কলা/);
   });
 
   it("rejects a published lesson that uses draft items or lacks audio", () => {
     const c = clone();
-    const l = lesson(c, "bn-w0-l1");
+    const l = lesson(c, "bn-hello-1");
     l.contentStatus = "published";
     l.reviewedAt = "2026-10-01";
+    l.reviewerNote = "Checked by a native speaker";
     const problems = validateCurriculum(c).join("\n");
     expect(problems).toMatch(/uses draft item bn\.word\.aam/);
     expect(problems).toMatch(/needs reviewed audio/);
+  });
+
+  it("lets a reviewed lesson ship without audio once its items are reviewed", () => {
+    const c = clone();
+    const l = lesson(c, "bn-hello-1");
+    l.contentStatus = "reviewed";
+    l.reviewedAt = "2026-10-01";
+    l.reviewerNote = "Checked by a native speaker";
+    for (const item of c.items.filter((i) => l.itemIds.includes(i.id))) {
+      Object.assign(item, { contentStatus: "reviewed", reviewedAt: "2026-10-01", reviewerNote: "ok" });
+    }
+    const problems = validateCurriculum(c).filter((p) => p.startsWith("lesson bn-hello-1:"));
+    expect(problems).toEqual([]);
+  });
+
+  it("rejects a sentence frame whose agreement leaves a person without a verb form", () => {
+    const c = clone();
+    const frame = activityOf(c, "bn-grammar-1", "make-sentence");
+    delete frame.agreement[0].pairs["bn.word.se"];
+    expect(validateCurriculum(c).join("\n")).toMatch(/agreement has no form for bn\.word\.se/);
+  });
+
+  it("rejects a sentence frame whose translation forgets a slot", () => {
+    const c = clone();
+    activityOf(c, "bn-grammar-1", "make-sentence").templateEn = "{0} {2}.";
+    expect(validateCurriculum(c).join("\n")).toMatch(/leaves out slot 1/);
   });
 
   it("rejects an Islamic lesson without source and reviewer notes", () => {
@@ -118,7 +165,7 @@ describe("validateCurriculum catches broken content", () => {
       difficulty: 1,
       contentStatus: "draft",
     });
-    const base = lesson(c, "bn-w0-l1");
+    const base = lesson(c, "bn-hello-1");
     c.lessons.push({
       ...structuredClone(base),
       id: "islam-w0-l1",
@@ -151,7 +198,7 @@ describe("validateCurriculum catches broken content", () => {
 
   it("rejects prerequisite cycles", () => {
     const c = clone();
-    lesson(c, "bn-w0-l1").prerequisites = ["bn-w0-l2"];
+    lesson(c, "bn-hello-1").prerequisites = ["bn-hello-2"];
     expect(validateCurriculum(c).join("\n")).toMatch(/prerequisite cycle/);
   });
 

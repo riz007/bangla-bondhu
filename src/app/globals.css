@@ -56,11 +56,10 @@
   --color-coral-ink: var(--coral-ink);
   --color-coral-soft: var(--coral-soft);
 
-  /* Falls back to the Bengali and Arabic fonts for words quoted inside notes. */
-  --font-sans: var(--font-anuphan), var(--font-noto-bengali), var(--font-noto-naskh), system-ui, sans-serif;
+  /* Falls back to the Bengali font for words quoted inside notes. */
+  --font-sans: var(--font-anuphan), var(--font-noto-bengali), system-ui, sans-serif;
   --font-display: var(--font-mitr), var(--font-anuphan), system-ui, sans-serif;
   --font-bengali: var(--font-noto-bengali), "Noto Sans Bengali", "Hind Siliguri", sans-serif;
-  --font-arabic: var(--font-noto-naskh), "Noto Naskh Arabic", "Amiri", serif;
 
   --text-sm: 0.9375rem;
   --text-sm--line-height: 1.5;
@@ -107,12 +106,6 @@ body {
 :lang(bn) {
   font-family: var(--font-bengali);
   line-height: 1.6;
-}
-
-.font-arabic,
-:lang(ar) {
-  font-family: var(--font-arabic);
-  line-height: 1.9;
 }
 
 .glyph {

@@ -1,13 +1,16 @@
 import type { Activity, ActivityType } from "./schema";
 
 export function isScoredActivity(activity: Activity): boolean {
-  return activity.type !== "introduce";
+  return activity.type !== "introduce" && activity.type !== "tip" && activity.type !== "make-sentence";
 }
 
 export function activityItemIds(activity: Activity): string[] {
   switch (activity.type) {
     case "introduce":
       return [activity.itemId];
+    case "tip":
+    case "make-sentence":
+      return [];
     case "match-pairs":
       return [...activity.itemIds];
     case "listen-and-select":

@@ -9,6 +9,10 @@ export function lessonStatus(lesson: Lesson, state: ProgressState): LessonStatus
   return arePrerequisitesMet(state, lesson.prerequisites) ? "available" : "locked";
 }
 
+export function isChapterComplete(lessons: readonly Lesson[], state: ProgressState): boolean {
+  return lessons.length > 0 && lessons.every((lesson) => isLessonComplete(state, lesson.id));
+}
+
 export function findNextLesson(lessons: readonly Lesson[], state: ProgressState): Lesson | null {
   return lessons.find((lesson) => lessonStatus(lesson, state) === "available") ?? null;
 }

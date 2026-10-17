@@ -10,7 +10,7 @@ src/
     (main)/                 Pages with the header and tab bar
     lesson/[lessonId]/      Full-screen lesson
     review-session/         Full-screen mixed review
-  content/                  Curriculum data (bn, ar, islam) and asset attributions
+  content/                  Curriculum data (bn, islam) and asset attributions
   features/
     curriculum/             Schema, loader, validation, Thai/English field helpers
     lessons/                Lesson engine, scoring, answer checks, activity components
@@ -28,12 +28,14 @@ e2e/                        Playwright tests
 1. Lesson content is plain TypeScript data in `src/content`. `npm run validate:content`
    (also run before every build) checks IDs, answer keys, assets, translations and
    review status.
-2. `lesson-engine.ts` is a small state machine. A question answered wrongly comes
+2. Lessons are written as outlines (`src/content/bn/build.ts` turns them into
+   activities with ids, deterministic option order and derived item lists).
+3. `lesson-engine.ts` is a small state machine. A question answered wrongly comes
    back once at the end of the lesson, and only first attempts count toward the score.
-3. The runner saves the engine state after every answer, so closing the tab loses
+4. The runner saves the engine state after every answer, so closing the tab loses
    at most the current question.
-4. When a lesson ends, each word gets one outcome and goes to the scheduler.
-5. The scheduler spaces reviews at 1, 3, 7, 14 and 30 days (local calendar days).
+5. When a lesson ends, each word gets one outcome and goes to the scheduler.
+6. The scheduler spaces reviews at 1, 3, 7, 14 and 30 days (local calendar days).
    A word only moves up when it was actually due, and a missed word is due again
    straight away.
 
@@ -53,8 +55,12 @@ in only one language.
 - **Missing audio is shown honestly.** Listening questions fall back to a written
   clue. The device's computer voice is offered only when one exists for the
   language, and it is labelled as such.
-- **Introduction cards** (`introduce`) are unscored steps that teach a word before
-  it is tested.
+- **Introduction and tip cards** (`introduce`, `tip`) are unscored steps that
+  teach before testing.
+- **Sentence maker** (`make-sentence`): sentence frames with word slots. An
+  agreement rule ties the verb slot to the subject slot; translations come from
+  per-word glosses and a template per language. Saved sentences live in the
+  progress store (schema v2), which migrates v1 data automatically.
 - **No component library.** Radio cards, a native `<dialog>` and a few buttons
   were simpler to build directly and keep the bundle small.
 - **Service worker** (`public/sw.js`): network-first pages with an offline page,
@@ -67,8 +73,10 @@ in only one language.
 | Route | Initial JS |
 | --- | --- |
 | Empty Next 16.4 app | 176 KB |
-| `/` | ~208 KB |
-| `/lesson/[id]` | ~222 KB |
+| `/` | ~238 KB |
+| `/lesson/[id]` | ~251 KB |
 
-Progress validation uses `zod/mini` in the browser; the full Zod build only runs
-in tests and the content check.
+The full course (about 30 KB gzip) currently loads on every page, because the
+review badge in the navigation needs it. Splitting the content per chapter
+would bring this down. Progress validation uses `zod/mini` in the browser; the
+full Zod build only runs in tests and the content check.

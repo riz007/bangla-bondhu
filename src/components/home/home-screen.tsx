@@ -32,7 +32,7 @@ export function HomeScreen() {
   const target = resume ?? next;
   const returning = ready && hasAnyProgress(progress.state);
   const { drafts } = countLessons("bn");
-  const showOptionalTracks = settings.showArabicTrack || settings.showIslamicTrack;
+  const showOptionalTracks = settings.showIslamicTrack;
 
   return (
     <div className="flex flex-col gap-12">
@@ -120,11 +120,7 @@ export function HomeScreen() {
             <span className="flex flex-col gap-1">
               <span className="text-sm text-ink-soft">{t.home.optional}</span>
               <span id="optional-title" className="font-display text-xl font-medium">
-                {settings.showArabicTrack && settings.showIslamicTrack
-                  ? t.home.optionalBoth
-                  : settings.showArabicTrack
-                    ? t.home.optionalArabic
-                    : t.home.optionalIslam}
+                {t.home.optionalIslam}
               </span>
               <span className="text-sm text-ink-soft">{t.home.optionalNote}</span>
             </span>

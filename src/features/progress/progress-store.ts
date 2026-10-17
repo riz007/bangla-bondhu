@@ -1,8 +1,14 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { createEmptyProgress, type ProgressState, type SavedSession } from "./model";
-import { discardSession, recordCompletedSession, saveSession, type CompletedSession } from "./operations";
+import { createEmptyProgress, type ProgressState, type SavedSentence, type SavedSession } from "./model";
+import {
+  addSentence,
+  discardSession,
+  recordCompletedSession,
+  saveSession,
+  type CompletedSession,
+} from "./operations";
 import { createBestRepository, type ProgressRepository } from "./repository";
 import { loadStoredProgress } from "./transfer";
 
@@ -74,6 +80,9 @@ export const progressActions = {
   },
   completeSession(session: CompletedSession) {
     return commit((state) => recordCompletedSession(state, session));
+  },
+  saveSentence(sentence: SavedSentence) {
+    return commit((state) => addSentence(state, sentence));
   },
   replaceAll(state: ProgressState) {
     return commit(() => state);

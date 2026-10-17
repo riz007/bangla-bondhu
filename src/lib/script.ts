@@ -17,7 +17,6 @@ export function languageAttributes(language: TargetLanguage): LanguageAttributes
 }
 
 export function scriptClass(language: TargetLanguage): string {
-  if (language === "ar") return "font-arabic";
   if (language === "bn-BD") return "font-bengali";
   return "";
 }

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createEmptyProgress, PROGRESS_SCHEMA_VERSION, type ProgressState } from "./model";
-import { aggregateItemOutcomes, recordCompletedSession } from "./operations";
+import { addSentence, aggregateItemOutcomes, recordCompletedSession } from "./operations";
 import { __resetProgressStoreForTests, getProgressSnapshot, progressActions } from "./progress-store";
 import { createIndexedDbRepository, createMemoryRepository } from "./repository";
 import { loadStoredProgress, migrateProgress, parseProgressImport, serializeProgress } from "./transfer";
@@ -64,7 +64,52 @@ describe("operations", () => {
   });
 });
 
+describe("sentence book", () => {
+  const sentence = (text: string, at: string) => ({
+    id: text,
+    text,
+    meaningTh: "ไทย",
+    meaningEn: "English",
+    createdAt: at,
+  });
+
+  it("keeps the newest sentence first and does not store duplicates", () => {
+    let state = addSentence(createEmptyProgress(), sentence("আমি ভাত খাই", "2026-10-17T08:00:00Z"));
+    state = addSentence(state, sentence("সে মাছ খায়", "2026-10-17T08:01:00Z"));
+    state = addSentence(state, sentence("আমি ভাত খাই", "2026-10-17T08:02:00Z"));
+    expect(state.sentences.map((s) => s.text)).toEqual(["আমি ভাত খাই", "সে মাছ খায়"]);
+  });
+});
+
 describe("migration and import/export", () => {
+  it("upgrades version 1 progress: keeps Bengali, drops the retired Arabic track", () => {
+    const v1 = {
+      schemaVersion: 1,
+      items: {
+        "bn.word.aam": { ...completedLesson(createEmptyProgress(), 1).items["bn.word.aam"] },
+        "ar.letter.ba": {
+          ...completedLesson(createEmptyProgress(), 1).items["bn.word.aam"],
+          itemId: "ar.letter.ba",
+          trackId: "ar",
+        },
+      },
+      lessons: {
+        "ar-w0-l1": {
+          ...completedLesson(createEmptyProgress(), 1).lessons["bn-w0-l1"],
+          lessonId: "ar-w0-l1",
+          trackId: "ar",
+        },
+      },
+      sessions: {},
+    };
+    const result = migrateProgress(v1);
+    if (!result.ok) throw new Error("migration failed");
+    expect(Object.keys(result.state.items)).toEqual(["bn.word.aam"]);
+    expect(result.state.lessons).toEqual({});
+    expect(result.state.sentences).toEqual([]);
+    expect(result.state.schemaVersion).toBe(PROGRESS_SCHEMA_VERSION);
+  });
+
   const sample = completedLesson(createEmptyProgress(), 0.75);
 
   it("round-trips through an export file", () => {

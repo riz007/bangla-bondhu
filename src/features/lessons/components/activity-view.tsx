@@ -4,9 +4,11 @@ import type { Activity, CurriculumItem } from "@/features/curriculum/schema";
 import type { ActivityResult } from "@/features/progress/model";
 import { ChoiceActivityView } from "./choice-activity";
 import { IntroduceCard } from "./introduce-card";
+import { MakeSentenceActivityView } from "./make-sentence-activity";
 import { MatchPairsActivityView } from "./match-pairs-activity";
 import { MissingCharacterActivityView } from "./missing-character-activity";
 import { SequenceActivityView } from "./sequence-activity";
+import { TipCard } from "./tip-card";
 import type { FeedbackDetail } from "./types";
 
 interface ActivityViewProps {
@@ -34,6 +36,10 @@ export function ActivityView({
           showTransliteration={showTransliteration}
         />
       );
+    case "tip":
+      return <TipCard activity={activity} onContinue={onContinue} />;
+    case "make-sentence":
+      return <MakeSentenceActivityView activity={activity} onContinue={onContinue} />;
     case "listen-and-select":
     case "image-to-word":
     case "word-to-image":

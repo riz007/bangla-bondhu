@@ -42,8 +42,15 @@ type StartChoice = "undecided" | "resume" | "restart";
 
 // After a reload mid-feedback, the answer can still be explained from the data.
 function fallbackFeedback(activity: Activity): FeedbackDetail | null {
-  if (activity.type === "match-pairs" || activity.type === "introduce") return null;
-  return { answerItemId: activity.promptItemId };
+  switch (activity.type) {
+    case "match-pairs":
+    case "introduce":
+    case "tip":
+    case "make-sentence":
+      return null;
+    default:
+      return { answerItemId: activity.promptItemId };
+  }
 }
 
 function activitiesOf(engine: EngineState): Activity[] {

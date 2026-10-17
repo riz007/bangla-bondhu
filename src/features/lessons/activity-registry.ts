@@ -8,7 +8,7 @@ export function instructionFor(activity: Activity, locale: Locale, prompt?: Curr
   const t = messages[locale].instructions;
   switch (activity.type) {
     case "introduce":
-      return prompt?.kind === "letter" || prompt?.kind === "vowel-sign" ? t.introduceLetter : t.introduceWord;
+      return prompt?.kind === "word" || prompt?.kind === "phrase" ? t.introduceWord : t.introduceLetter;
     case "listen-and-select":
       return t.listenAndSelect;
     case "image-to-word":
@@ -26,7 +26,11 @@ export function instructionFor(activity: Activity, locale: Locale, prompt?: Curr
     case "build-word":
       return t.buildWord;
     case "missing-character":
-      return t.missingCharacter;
+      return prompt?.kind === "phrase" ? t.fillSentence : t.missingCharacter;
+    case "tip":
+      return locale === "en" ? activity.titleEn : activity.titleTh;
+    case "make-sentence":
+      return t.makeSentence;
     case "listen-and-order":
       return t.listenAndOrder;
   }

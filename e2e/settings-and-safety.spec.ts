@@ -7,7 +7,7 @@ test.describe("settings", () => {
   });
 
   test("transliteration and sound settings change the lesson", async ({ page }) => {
-    await page.goto("/lesson/bn-w0-l1");
+    await page.goto("/lesson/bn-hello-1");
     await expect(page.getByText("aam", { exact: true })).toBeVisible();
     await expect(page.getByText("ยังไม่มีเสียงอ่านที่บันทึกและตรวจแล้ว")).toBeVisible();
 
@@ -15,14 +15,14 @@ test.describe("settings", () => {
     await page.getByLabel("ไม่แสดง").check();
     await page.getByLabel("ปิดเสียงทั้งหมด").check();
 
-    await page.goto("/lesson/bn-w0-l1");
+    await page.goto("/lesson/bn-hello-1");
     await expect(page.getByRole("heading", { name: "มารู้จักคำใหม่กัน" })).toBeVisible();
     await expect(page.getByText("aam", { exact: true })).toHaveCount(0);
     await expect(page.getByText("ปิดเสียงไว้อยู่ เปิดได้ที่หน้าตั้งค่า")).toBeVisible();
   });
 
   test("reset asks for confirmation, then clears progress", async ({ page }) => {
-    await page.goto("/lesson/bn-w0-l1");
+    await page.goto("/lesson/bn-hello-1");
     await completeLesson(page);
     await page.goto("/settings");
 
@@ -42,7 +42,7 @@ test.describe("settings", () => {
   });
 
   test("export then import restores progress, and bad files are refused", async ({ page }) => {
-    await page.goto("/lesson/bn-w0-l1");
+    await page.goto("/lesson/bn-hello-1");
     await completeLesson(page);
     await page.goto("/settings");
 
@@ -80,7 +80,7 @@ test.describe("settings", () => {
     await expect(page.getByText("Let's make friends with Bengali")).toBeVisible();
     await expect(page.getByRole("link", { name: "Start the first lesson" })).toBeVisible();
 
-    await page.goto("/lesson/bn-w0-l1");
+    await page.goto("/lesson/bn-hello-1");
     await expect(page.getByRole("heading", { name: "Meet a new word" })).toBeVisible();
     await expect(page.getByText("mango", { exact: true })).toBeVisible();
 
@@ -88,14 +88,13 @@ test.describe("settings", () => {
     await expect(page.getByRole("heading", { name: "มารู้จักคำใหม่กัน" })).toBeVisible();
   });
 
-  test("hiding the optional tracks removes them from the home page", async ({ page }) => {
+  test("hiding the optional Islamic section removes it from the home page", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("link", { name: /อักษรอาหรับ/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /ความรู้อิสลาม/ })).toBeVisible();
     await page.goto("/settings");
-    await page.getByLabel("แสดงอักษรอาหรับเบื้องต้น").uncheck();
     await page.getByLabel("แสดงความรู้อิสลามเบื้องต้น").uncheck();
     await page.goto("/");
-    await expect(page.getByRole("link", { name: /อักษรอาหรับ/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /ความรู้อิสลาม/ })).toHaveCount(0);
   });
 });
 
@@ -106,7 +105,7 @@ test.describe("accessibility and layout", () => {
 
   test("a lesson works with reduced motion", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/lesson/bn-w0-l1");
+    await page.goto("/lesson/bn-hello-1");
     const card = page.locator("article.animate-rise");
     const duration = await card.evaluate((el) => getComputedStyle(el).animationDuration);
     expect(parseFloat(duration)).toBeLessThan(0.01);
@@ -120,33 +119,19 @@ test.describe("accessibility and layout", () => {
   ]) {
     test(`no horizontal scrolling at ${viewport.width}px`, async ({ page }) => {
       await page.setViewportSize(viewport);
-      for (const path of ["/", "/settings", "/progress", "/islamic-learning", "/lesson/bn-w0-l1"]) {
+      for (const path of ["/", "/settings", "/progress", "/islamic-learning", "/lesson/bn-hello-1"]) {
         await page.goto(path);
         await page.waitForLoadState("networkidle");
         const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
         expect(overflow, `${path} overflows`).toBeLessThanOrEqual(0);
       }
       // Step past the introductions into the image-choice grid as well.
-      await page.goto("/lesson/bn-w0-l1");
+      await page.goto("/lesson/bn-hello-1");
       for (let i = 0; i < 3; i += 1) await answerCurrent(page);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(overflow).toBeLessThanOrEqual(0);
     });
   }
-
-  test("Arabic renders right-to-left in its own direction context", async ({ page }) => {
-    await page.goto("/islamic-learning");
-    const sample = page.locator('p[lang="ar"]');
-    await expect(sample).toHaveAttribute("dir", "rtl");
-    await expect(page.getByText("เนื้อหากำลังรอการตรวจทาน")).toBeVisible();
-
-    await page.goto("/lesson/ar-w0-l1");
-    const glyph = page.locator('[data-activity-id] span[lang="ar"]').first();
-    await expect(glyph).toHaveAttribute("dir", "rtl");
-    await expect(glyph).toHaveText("ا");
-    const direction = await glyph.evaluate((el) => getComputedStyle(el).direction);
-    expect(direction).toBe("rtl");
-  });
 });
 
 test("no request sends progress or personal data anywhere", async ({ page, baseURL }) => {
@@ -157,8 +142,8 @@ test("no request sends progress or personal data anywhere", async ({ page, baseU
   });
 
   await page.goto("/");
-  await page.goto("/lesson/bn-w0-l1");
-  await completeLesson(page, { wrongOnce: "bn-w0-l1-a4" });
+  await page.goto("/lesson/bn-hello-1");
+  await completeLesson(page, { wrongOnce: "bn-hello-1-4" });
   await page.goto("/review");
   await page.goto("/settings");
 
