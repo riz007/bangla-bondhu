@@ -1,0 +1,353 @@
+@import "tailwindcss";
+
+/* Text contrast on --paper is at least 4.9:1. --mango is only used as a fill. */
+:root {
+  --paper: #fbf5e6;
+  --paper-deep: #f2e8cf;
+  --card: #fffdf7;
+  --ink: #1d2b2a;
+  --ink-soft: #46524f;
+  --rule: #d9cdb0;
+  --teal: #0e5e58;
+  --teal-deep: #0a4541;
+  --teal-soft: #d6ebe7;
+  --leaf: #3d7a38;
+  --leaf-soft: #e0eed3;
+  --mango: #f3a712;
+  --mango-ink: #9a5600;
+  --mango-soft: #fde9b8;
+  --sky: #5ba4cf;
+  --sky-soft: #ddeef7;
+  --coral-ink: #a3402c;
+  --coral-soft: #f8e0d7;
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  /* Unlayered, so these also set Tailwind's rounded-sm/md/lg. */
+  --radius-lg: 24px;
+  --shadow-print: 0 3px 0 rgb(29 43 42 / 0.16);
+  --shadow-lift: 0 6px 0 rgb(29 43 42 / 0.12), 0 14px 30px -18px rgb(29 43 42 / 0.45);
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-quick: 140ms;
+  --duration-base: 240ms;
+  --duration-moment: 600ms;
+
+  --touch-min: 44px;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-rule: var(--rule);
+  --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-teal-soft: var(--teal-soft);
+  --color-leaf: var(--leaf);
+  --color-leaf-soft: var(--leaf-soft);
+  --color-mango: var(--mango);
+  --color-mango-ink: var(--mango-ink);
+  --color-mango-soft: var(--mango-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-coral-ink: var(--coral-ink);
+  --color-coral-soft: var(--coral-soft);
+
+  /* Falls back to the Bengali and Arabic fonts for words quoted inside notes. */
+  --font-sans: var(--font-anuphan), var(--font-noto-bengali), var(--font-noto-naskh), system-ui, sans-serif;
+  --font-display: var(--font-mitr), var(--font-anuphan), system-ui, sans-serif;
+  --font-bengali: var(--font-noto-bengali), "Noto Sans Bengali", "Hind Siliguri", sans-serif;
+  --font-arabic: var(--font-noto-naskh), "Noto Naskh Arabic", "Amiri", serif;
+
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.65;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.5;
+  --text-xl: 1.5625rem;
+  --text-xl--line-height: 1.35;
+  --text-2xl: 1.9375rem;
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 2.5rem;
+  --text-3xl--line-height: 1.15;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.65;
+  background-color: var(--paper);
+  background-image: radial-gradient(rgb(29 43 42 / 0.11) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  min-height: 100dvh;
+}
+
+:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--mango-soft);
+}
+
+/* Bengali vowel signs and conjuncts need extra line height. */
+.font-bengali,
+:lang(bn) {
+  font-family: var(--font-bengali);
+  line-height: 1.6;
+}
+
+.font-arabic,
+:lang(ar) {
+  font-family: var(--font-arabic);
+  line-height: 1.9;
+}
+
+.glyph {
+  font-size: clamp(4.5rem, 22vw, 7.5rem);
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+/* Washi tape strip on top of a card. */
+.taped {
+  position: relative;
+}
+.taped::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 92px;
+  height: 24px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: repeating-linear-gradient(
+    -45deg,
+    rgb(243 167 18 / 0.55) 0 8px,
+    rgb(243 167 18 / 0.38) 8px 16px
+  );
+  border-left: 2px dashed rgb(255 253 247 / 0.7);
+  border-right: 2px dashed rgb(255 253 247 / 0.7);
+  pointer-events: none;
+}
+.taped-teal::before {
+  background: repeating-linear-gradient(-45deg, rgb(14 94 88 / 0.35) 0 8px, rgb(14 94 88 / 0.22) 8px 16px);
+}
+
+.paper-card {
+  background: var(--card);
+  border: 2px solid rgb(29 43 42 / 0.14);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-print);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  min-width: var(--touch-min);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  border: 2px solid var(--ink);
+  transition:
+    transform var(--duration-quick) var(--ease-out),
+    box-shadow var(--duration-quick) var(--ease-out),
+    background-color var(--duration-quick);
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 transparent;
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.btn-primary {
+  background: var(--teal);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--teal-deep);
+}
+.btn-secondary {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 4px 0 rgb(29 43 42 / 0.25);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--paper-deep);
+}
+.btn-quiet {
+  min-height: var(--touch-min);
+  padding: 0.5rem 0.9rem;
+  border-color: transparent;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--ink);
+}
+.btn-quiet:hover {
+  background: rgb(29 43 42 / 0.06);
+}
+
+/* Selected and marked states change the border too, not just the colour. */
+.option-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  padding: 0.75rem 1rem;
+  background: var(--card);
+  border: 2px solid rgb(29 43 42 / 0.2);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-print);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-quick),
+    transform var(--duration-quick) var(--ease-out),
+    background-color var(--duration-quick);
+}
+.option-card:hover {
+  border-color: var(--teal);
+}
+.option-input:focus-visible + .option-card {
+  outline: 3px solid var(--teal);
+  outline-offset: 3px;
+}
+.option-input:checked + .option-card {
+  border-color: var(--teal);
+  border-width: 3px;
+  background: var(--teal-soft);
+}
+.option-card[data-state="correct"] {
+  border-color: var(--leaf);
+  border-width: 3px;
+  background: var(--leaf-soft);
+}
+.option-card[data-state="incorrect"] {
+  border-color: var(--coral-ink);
+  border-style: dashed;
+  border-width: 3px;
+  background: var(--coral-soft);
+}
+.option-card[data-state="dimmed"] {
+  opacity: 0.6;
+}
+
+.tile {
+  min-width: 56px;
+  min-height: 56px;
+  padding: 0.25rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  border: 2px solid var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+  font-size: 1.75rem;
+  cursor: pointer;
+  transition: transform var(--duration-quick) var(--ease-out);
+}
+.tile:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.tile:disabled {
+  cursor: default;
+  opacity: 0.35;
+  box-shadow: none;
+}
+
+@keyframes stamp-in {
+  0% {
+    transform: scale(1.6) rotate(-14deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.94) rotate(-7deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-8deg);
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes rise {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.animate-stamp {
+  animation: stamp-in var(--duration-moment) var(--ease-out) both;
+}
+.animate-pop {
+  animation: pop var(--duration-base) var(--ease-out);
+}
+.animate-rise {
+  animation: rise var(--duration-base) var(--ease-out) both;
+}
+
+html[data-motion="reduce"] *,
+html[data-motion="reduce"] *::before,
+html[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion="full"]) *,
+  html:not([data-motion="full"]) *::before,
+  html:not([data-motion="full"]) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .option-card,
+  .tile,
+  .btn,
+  .paper-card {
+    border: 2px solid CanvasText;
+  }
+  .taped::before {
+    display: none;
+  }
+}
